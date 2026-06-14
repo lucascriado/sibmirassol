@@ -31,8 +31,10 @@ export function Sidebar({ sidebarRef }: { sidebarRef?: Ref<HTMLElement> }) {
   return (
     <aside className="sidebar" ref={sidebarRef}>
       <div className="brand">
-        <span className="brand-icon"><Church /></span>
-        <span className="brand-text"><strong>SIB Mirassol</strong><small>Gestão ministerial</small></span>
+        <Link className="brand-link" href="/" aria-label="Ir para a dashboard" title="Dashboard">
+          <span className="brand-icon"><Church /></span>
+          <span className="brand-text"><strong>SIB Mirassol</strong><small>Gestão ministerial</small></span>
+        </Link>
         <label className="sidebar-collapse-button" htmlFor="sidebar-collapse" aria-label="Recolher menu" title="Recolher menu">
           <ChevronLeft />
         </label>

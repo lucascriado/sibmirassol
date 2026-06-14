@@ -8,6 +8,7 @@ membros e visitantes. Elas usam apenas SQL PostgreSQL e não dependem de ORM.
 - `migrations/001_initial_schema.sql`: tabelas, constraints, índices e triggers.
 - `migrations/002_directory_views.sql`: views prontas para consultas das telas.
 - `migrations/003_seed_mock_data.sql`: ministérios e todos os registros mockados.
+- `migrations/004_add_member_cell.sql`: adiciona células aos membros existentes.
 
 O seed é idempotente para facilitar o desenvolvimento. As migrations de schema
 devem ser executadas apenas uma vez em cada banco.
