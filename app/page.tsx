@@ -13,36 +13,32 @@ import {
   Users,
 } from "lucide-react";
 import { Calendar } from "@/components/calendar";
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { AnimatedNumber } from "@/components/animated-number";
 
 const stats = [
-  { label: "Total de membros", value: "1.250", icon: Users, color: "purple" },
-  { label: "Visitantes no mês", value: "42", icon: UserPlus, color: "blue" },
-  { label: "Células ativas", value: "15", icon: Network, color: "green" },
+  { label: "Total de membros", value: 1250, icon: Users, color: "purple" },
+  { label: "Visitantes no mês", value: 42, icon: UserPlus, color: "blue" },
+  { label: "Células ativas", value: 15, icon: Network, color: "green" },
 ];
 
 const activities = [
   { title: "Novo membro cadastrado", detail: "Ana Clara Oliveira • Hoje, 10:45", icon: UserPlus, color: "purple" },
   { title: "Batismo realizado", detail: "5 novos batizados • Ontem, 19:00", icon: Droplet, color: "green" },
   { title: "Doação registrada", detail: "Dízimo Ministerial • 15/05/2024", icon: CircleDollarSign, color: "blue" },
+  { title: "Novo membro cadastrado", detail: "Lucas Henrique Santos • 14/05/2024", icon: UserPlus, color: "purple" },
 ];
 
 export default function Dashboard() {
   return (
-    <>
-      <input className="menu-toggle" id="menu-toggle" type="checkbox" />
-      <Sidebar />
-      <label className="menu-overlay" htmlFor="menu-toggle" aria-label="Fechar menu" />
-      <Header />
-
+    <DashboardShell title="Dashboard">
       <main>
         <section className="stats" aria-label="Indicadores">
           {stats.map(({ label, value, icon: Icon, color }) => (
             <article className="stat-card" key={label}>
               <span className={`stat-icon ${color}`}><Icon /></span>
               <span className="eyebrow">{label}</span>
-              <strong>{value}</strong>
+              <strong><AnimatedNumber value={value} /></strong>
             </article>
           ))}
         </section>
@@ -64,7 +60,7 @@ export default function Dashboard() {
             <h2>Atividades Recentes</h2>
             <div className="activity-list">
               {activities.map(({ title, detail, icon: Icon, color }) => (
-                <div className="activity" key={title}>
+                <div className="activity" key={`${title}-${detail}`}>
                   <span className={`activity-icon ${color}`}><Icon /></span>
                   <span><strong>{title}</strong><small>{detail}</small></span>
                 </div>
@@ -91,7 +87,7 @@ export default function Dashboard() {
           </article>
         </section>
       </main>
-    </>
+    </DashboardShell>
   );
 }
 

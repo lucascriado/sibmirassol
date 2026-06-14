@@ -1,16 +1,32 @@
 import Image from "next/image";
 import { Bell, Menu, Search } from "lucide-react";
 
-export function Header() {
+export function Header({
+  title,
+  searchPlaceholder,
+  searchValue,
+  onSearchChange,
+}: {
+  title: string;
+  searchPlaceholder: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+}) {
   return (
     <header className="topbar">
-      <label className="icon-button menu-button" htmlFor="menu-toggle" aria-label="Abrir menu">
+      <label className="icon-button menu-button" htmlFor="menu-toggle" aria-label="Abrir menu" data-sidebar-trigger>
         <Menu />
       </label>
-      <h1>Dashboard</h1>
+      <h1>{title}</h1>
       <label className="search">
         <Search />
-        <input type="search" placeholder="Buscar membros..." aria-label="Buscar membros" />
+        <input
+          type="search"
+          placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
+          value={searchValue}
+          onChange={(event) => onSearchChange?.(event.target.value)}
+        />
       </label>
       <button className="icon-button" aria-label="Notificações"><Bell /></button>
       <span className="divider" />
