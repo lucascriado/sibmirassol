@@ -192,8 +192,15 @@ function MinistryForm({ mode, ministry, members, onClose, onSubmit }: { mode: "c
   const readOnly = mode === "view";
   const filteredMembers = useMemo(() => {
     const term = memberSearch.trim().toLocaleLowerCase("pt-BR");
-    return members.filter((member) => !term || `${member.name} ${member.email}`.toLocaleLowerCase("pt-BR").includes(term));
-  }, [memberSearch, members]);
+    return members
+      .filter((member) => !term || `${member.name} ${member.email}`.toLocaleLowerCase("pt-BR").includes(term))
+      .sort((a, b) => {
+        const aSelected = values.memberIds.includes(a.id);
+        const bSelected = values.memberIds.includes(b.id);
+        if (aSelected !== bSelected) return aSelected ? -1 : 1;
+        return a.name.localeCompare(b.name, "pt-BR");
+      });
+  }, [memberSearch, members, values.memberIds]);
 
   useEffect(() => {
     setSaving(false);
@@ -228,15 +235,26 @@ function MinistryForm({ mode, ministry, members, onClose, onSubmit }: { mode: "c
   return (
     <form className="resource-dialog resource-page-form ministry-resource-dialog" onSubmit={submit}>
       <header><div><strong>{mode === "create" ? "Novo Ministério" : mode === "view" ? "Visualizar Ministério" : "Editar Ministério"}</strong><span>Vincule membros existentes ao ministério.</span></div><button type="button" onClick={onClose} aria-label="Fechar"><X /></button></header>
-      <fieldset disabled={saving || readOnly}>
-        <label><span>Nome *</span><input required value={values.name} onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))} /></label>
-        <label><span>Líder</span><select value={values.leaderId} onChange={(event) => setValues((current) => ({ ...current, leaderId: event.target.value }))}><option value="">Sem líder definido</option>{members.map((member) => <option value={member.id} key={member.id}>{member.name}</option>)}</select></label>
-        <label><span>Cor</span><select value={values.color} onChange={(event) => setValues((current) => ({ ...current, color: event.target.value as MinistryFormValues["color"] }))}><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="gray">Cinza</option></select></label>
-        <label className="wide form-section-field"><span>Descrição</span><textarea value={values.description} onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))} /></label>
+      <fieldset disabled={saving}>
+        <label><span>Nome *</span><input required readOnly={readOnly} value={values.name} onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))} /></label>
+        <label><span>Líder</span><select disabled={readOnly} value={values.leaderId} onChange={(event) => setValues((current) => ({ ...current, leaderId: event.target.value }))}><option value="">Sem líder definido</option>{members.map((member) => <option value={member.id} key={member.id}>{member.name}</option>)}</select></label>
+        <label><span>Cor</span><select disabled={readOnly} value={values.color} onChange={(event) => setValues((current) => ({ ...current, color: event.target.value as MinistryFormValues["color"] }))}><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="gray">Cinza</option></select></label>
+        <label className="wide form-section-field"><span>Descrição</span><textarea readOnly={readOnly} value={values.description} onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))} /></label>
         <div className="member-picker wide">
           <span>Membros do ministério</span>
-          <input className="member-picker-search" value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="Pesquisar membros..." />
-          <div>{filteredMembers.map((member) => <label key={member.id}><input type="checkbox" checked={values.memberIds.includes(member.id)} onChange={() => toggleMember(member.id)} /> <strong>{member.name}</strong><small>{member.email}</small></label>)}</div>
+          <small className="member-picker-help">Marque abaixo as pessoas que fazem parte deste ministério.</small>
+          <label className="member-filter-search member-picker-filter"><Search /><input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="Filtrar membros..." /></label>
+          <div>{filteredMembers.map((member) => {
+            const selected = values.memberIds.includes(member.id);
+            return (
+              <label className={selected ? "selected" : undefined} key={member.id}>
+                <input type="checkbox" disabled={readOnly} checked={selected} onChange={() => toggleMember(member.id)} />
+                <strong>{member.name}</strong>
+                <small>{member.email}</small>
+                <small className="member-picker-meta">{selected ? "Vinculado neste ministério" : member.ministry && member.ministry !== "Nenhum" ? `Atual: ${member.ministry}` : "Sem ministério"}</small>
+              </label>
+            );
+          })}</div>
           {!filteredMembers.length && <small className="member-picker-empty">Nenhum membro encontrado.</small>}
         </div>
       </fieldset>
@@ -341,7 +359,7 @@ function AttendanceDialog({ ministry, onClose }: { ministry: Ministry | null; on
   }
 
   return (
-    <div className="record-dialog-layer" role="dialog" aria-modal="true">
+    <div className="record-dialog-layer attendance-dialog-layer" role="dialog" aria-modal="true">
       <section className="resource-dialog attendance-dialog">
         <header><div><strong>Chamada da Escola Bíblica</strong><span>{ministry.name}</span></div><button type="button" onClick={onClose} aria-label="Fechar"><X /></button></header>
         <div className="attendance-toolbar"><label><span>Data</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><button onClick={() => setMembers((current) => current.map((member) => ({ ...member, present: true })))}>Marcar todos</button></div>

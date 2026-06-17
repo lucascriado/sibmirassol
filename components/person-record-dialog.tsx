@@ -26,6 +26,7 @@ export type PersonRecordValues = {
   status: string;
   notes: string;
   invitedBy: string;
+  photoDataUrl: string;
 };
 
 const emptyValues: PersonRecordValues = {
@@ -48,7 +49,10 @@ const emptyValues: PersonRecordValues = {
   status: "Ativo",
   notes: "",
   invitedBy: "",
+  photoDataUrl: "",
 };
+
+const PHOTO_MAX_BYTES = 120 * 1024;
 
 const brazilianStates = [
   "Acre", "Alagoas", "Amapá", "Amazonas", "Bahia", "Ceará", "Distrito Federal",
@@ -90,6 +94,7 @@ export function PersonRecordDialog({
 }) {
   const [values, setValues] = useState<PersonRecordValues>(() => normalizeValues(initialValues));
   const [submitting, setSubmitting] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const [zipCodeStatus, setZipCodeStatus] = useState<"idle" | "loading" | "found" | "not-found">("idle");
   const [ministryOptions, setMinistryOptions] = useState<string[]>(["Nenhum", "Louvor", "Missões", "Acolhimento", "Infantil"]);
   const [cellOptions, setCellOptions] = useState<string[]>(["Sem célula"]);
@@ -98,6 +103,7 @@ export function PersonRecordDialog({
     if (open) {
       setValues(normalizeValues(initialValues));
       setSubmitting(false);
+      setPhotoError("");
       setZipCodeStatus("idle");
     }
   }, [initialValues, open]);
@@ -186,6 +192,34 @@ export function PersonRecordDialog({
     setValues((current) => ({ ...current, [field]: value }));
   }
 
+  function updatePhoto(file: File | undefined) {
+    setPhotoError("");
+    if (!file) return;
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setPhotoError("Use uma imagem PNG ou JPG.");
+      return;
+    }
+    if (file.size > PHOTO_MAX_BYTES) {
+      setPhotoError("Use uma imagem de até 120 KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result.startsWith("data:image/png;base64,") && !result.startsWith("data:image/jpeg;base64,")) {
+        setPhotoError("Não foi possível ler esta imagem.");
+        return;
+      }
+      if (new Blob([result]).size > PHOTO_MAX_BYTES) {
+        setPhotoError("Use uma imagem de até 120 KB após conversão.");
+        return;
+      }
+      update("photoDataUrl", result);
+    };
+    reader.onerror = () => setPhotoError("Não foi possível ler esta imagem.");
+    reader.readAsDataURL(file);
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (submitting || readOnly) return;
@@ -210,12 +244,17 @@ export function PersonRecordDialog({
       <form className="record-form" onSubmit={submit}>
         <fieldset className="record-form-fields" disabled={submitting || readOnly}>
         <aside className="record-photo-card">
-          <span className={`record-photo-placeholder ${values.name.trim() ? "has-initials" : ""}`}>
-            {values.name.trim() ? initialsFrom(values.name) : <Camera />}
+          <span className={`record-photo-placeholder ${values.photoDataUrl ? "has-photo" : values.name.trim() ? "has-initials" : ""}`}>
+            {values.photoDataUrl ? <img src={values.photoDataUrl} alt="" /> : values.name.trim() ? initialsFrom(values.name) : <Camera />}
           </span>
           <strong>Foto do Perfil</strong>
-          <small>PNG ou JPG até 5MB</small>
-          <button type="button" disabled={submitting}>Alterar Imagem</button>
+          <small>PNG ou JPG até 120 KB</small>
+          <label className="record-photo-button">
+            Alterar imagem
+            <input type="file" accept="image/png,image/jpeg" onChange={(event) => { updatePhoto(event.target.files?.[0]); event.target.value = ""; }} />
+          </label>
+          {values.photoDataUrl && <button type="button" className="record-photo-remove" disabled={submitting} onClick={() => update("photoDataUrl", "")}>Remover foto</button>}
+          {photoError && <small className="record-field-error">{photoError}</small>}
         </aside>
 
         <FormSection title="Informações Pessoais" icon={<UserRound />} className="record-personal">

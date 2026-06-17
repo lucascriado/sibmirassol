@@ -16,6 +16,7 @@ export class Person extends Model<InferAttributes<Person>, InferCreationAttribut
   declare neighborhood: string | null;
   declare city: string | null;
   declare state: string | null;
+  declare avatarUrl: string | null;
   declare notes: string | null;
 }
 
@@ -33,6 +34,7 @@ Person.init({
   neighborhood: DataTypes.STRING(100),
   city: DataTypes.STRING(100),
   state: DataTypes.STRING(80),
+  avatarUrl: { type: DataTypes.TEXT, field: "avatar_url" },
   notes: DataTypes.TEXT,
 }, { sequelize: db, tableName: "people", createdAt: "created_at", updatedAt: "updated_at" });
 

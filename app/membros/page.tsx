@@ -25,6 +25,7 @@ type Member = {
   initials: string;
   name: string;
   email: string;
+  photoDataUrl?: string;
   ministry: string;
   ministryColor: "blue" | "green" | "gray" | "purple";
   cell: string;
@@ -184,7 +185,7 @@ export default function MembersPage() {
                 <tbody>
                   {visibleMembers.map((member) => (
                     <tr key={member.email}>
-                      <td data-label="Nome"><div className="member-identity"><span className="member-avatar">{member.initials}</span><span><strong>{member.name}</strong><small>{member.email}</small></span></div></td>
+                      <td data-label="Nome"><div className="member-identity"><span className="member-avatar">{member.photoDataUrl ? <img src={member.photoDataUrl} alt="" /> : member.initials}</span><span><strong>{member.name}</strong><small>{member.email}</small></span></div></td>
                       <td data-label="Ministério"><span className={`ministry-tag ${member.ministryColor}`}>{member.ministry}</span></td>
                       <td data-label="Célula"><span className={`cell-tag ${member.cell === "Sem célula" ? "empty" : ""}`}>{member.cell}</span></td>
                       <td data-label="Status"><span className={`status-tag ${member.status === "Ativo" ? "is-active" : "is-inactive"}`}><i />{member.status}</span></td>
@@ -230,7 +231,7 @@ function formatDate(value: string) {
 }
 
 function memberValues(member: Member): Partial<PersonRecordValues> {
-  return { name: member.name, email: member.email, phone: member.phone, birthDate: member.birthDate?.slice(0, 10), gender: member.gender, civilStatus: member.civilStatus, cpf: member.cpf, zipCode: member.zipCode, address: member.address, neighborhood: member.neighborhood, city: member.city, state: member.state, role: member.role, ministry: member.ministry, cell: member.cell, baptismDate: member.baptismDate?.slice(0, 10), status: member.status, notes: member.notes };
+  return { name: member.name, email: member.email, phone: member.phone, birthDate: member.birthDate?.slice(0, 10), gender: member.gender, civilStatus: member.civilStatus, cpf: member.cpf, zipCode: member.zipCode, address: member.address, neighborhood: member.neighborhood, city: member.city, state: member.state, role: member.role, ministry: member.ministry, cell: member.cell, baptismDate: member.baptismDate?.slice(0, 10), status: member.status, notes: member.notes, photoDataUrl: member.photoDataUrl };
 }
 
 function ministryColor(ministry: string): Member["ministryColor"] {

@@ -11,7 +11,7 @@ export async function GET() {
     const { rows } = await query(`
       SELECT id, full_name AS name, email, phone, birth_date AS "birthDate",
         gender, marital_status AS "civilStatus", cpf, zip_code AS "zipCode",
-        address, neighborhood, city, state, notes, ministry, ministry_color AS "ministryColor",
+        address, neighborhood, city, state, avatar_url AS "photoDataUrl", notes, ministry, ministry_color AS "ministryColor",
         role, status, baptism_status AS baptism, baptism_date AS "baptismDate",
         admission_date AS date, is_new AS "isNew", cell_name AS cell
       FROM member_directory ORDER BY admission_date DESC, full_name

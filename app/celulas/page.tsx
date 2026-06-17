@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { CalendarClock, ChevronRight, Clock, Edit3, LoaderCircle, MapPin, Network, Plus, Search, Trash2, Users, X } from "lucide-react";
+import { CalendarClock, Clock, Edit3, LoaderCircle, MapPin, Network, Plus, Search, Trash2, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { NumberSkeleton, Skeleton } from "@/components/skeleton";
@@ -185,8 +185,8 @@ export default function CellsPage() {
                   <p><Clock />{cell.meetingDay}, {cell.meetingTime}</p>
                   <div className="avatar-row">{cell.members.slice(0, 3).map((member) => <span key={member.id}>{initials(member.name)}</span>)}{cell.memberCount > 3 && <span>+{cell.memberCount - 3}</span>}</div>
                   <footer>
-                    <button onClick={() => openForm("view", cell)}>Visualizar <ChevronRight /></button>
-                    <button aria-label={`Editar ${cell.name}`} onClick={() => openForm("edit", cell)}><Edit3 /></button>
+                    <button onClick={() => openForm("view", cell)}>Visualizar</button>
+                    <button onClick={() => openForm("edit", cell)}><Edit3 />Editar</button>
                     <button aria-label={`Excluir ${cell.name}`} onClick={() => setDeleteTarget(cell)}><Trash2 /></button>
                   </footer>
                 </article>
@@ -209,8 +209,15 @@ function CellForm({ mode, cell, members, onClose, onSubmit }: { mode: "create" |
   const readOnly = mode === "view";
   const filteredMembers = useMemo(() => {
     const term = memberSearch.trim().toLocaleLowerCase("pt-BR");
-    return members.filter((member) => !term || `${member.name} ${member.email}`.toLocaleLowerCase("pt-BR").includes(term));
-  }, [memberSearch, members]);
+    return members
+      .filter((member) => !term || `${member.name} ${member.email}`.toLocaleLowerCase("pt-BR").includes(term))
+      .sort((a, b) => {
+        const aSelected = values.memberIds.includes(a.id);
+        const bSelected = values.memberIds.includes(b.id);
+        if (aSelected !== bSelected) return aSelected ? -1 : 1;
+        return a.name.localeCompare(b.name, "pt-BR");
+      });
+  }, [memberSearch, members, values.memberIds]);
 
   useEffect(() => {
     setSaving(false);
@@ -257,18 +264,29 @@ function CellForm({ mode, cell, members, onClose, onSubmit }: { mode: "create" |
         <div><strong>{mode === "create" ? "Nova Célula" : mode === "view" ? "Detalhes da Célula" : "Editar Célula"}</strong><span>Vincule membros já cadastrados ao pequeno grupo.</span></div>
         <button type="button" onClick={onClose} aria-label="Fechar"><X /></button>
       </header>
-      <fieldset disabled={saving || readOnly}>
-        <label><span>Nome *</span><input required value={values.name} onChange={(event) => update("name", event.target.value)} /></label>
-        <label><span>Líder</span><select value={values.leaderId} onChange={(event) => update("leaderId", event.target.value)}><option value="">Sem líder definido</option>{members.map((member) => <option value={member.id} key={member.id}>{member.name}</option>)}</select></label>
-        <label><span>Endereço</span><input value={values.address} onChange={(event) => update("address", event.target.value)} /></label>
-        <label><span>Dia</span><select value={values.meetingDay} onChange={(event) => update("meetingDay", event.target.value)}>{["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"].map((day) => <option key={day}>{day}</option>)}</select></label>
-        <label><span>Horário</span><input type="time" value={values.meetingTime} onChange={(event) => update("meetingTime", event.target.value)} /></label>
-        <label><span>Cor</span><select value={values.color} onChange={(event) => update("color", event.target.value)}><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="gray">Cinza</option></select></label>
-        <label className="wide form-section-field"><span>Observações</span><textarea value={values.notes} onChange={(event) => update("notes", event.target.value)} /></label>
+      <fieldset disabled={saving}>
+        <label><span>Nome *</span><input required readOnly={readOnly} value={values.name} onChange={(event) => update("name", event.target.value)} /></label>
+        <label><span>Líder</span><select disabled={readOnly} value={values.leaderId} onChange={(event) => update("leaderId", event.target.value)}><option value="">Sem líder definido</option>{members.map((member) => <option value={member.id} key={member.id}>{member.name}</option>)}</select></label>
+        <label><span>Endereço</span><input readOnly={readOnly} value={values.address} onChange={(event) => update("address", event.target.value)} /></label>
+        <label><span>Dia</span><select disabled={readOnly} value={values.meetingDay} onChange={(event) => update("meetingDay", event.target.value)}>{["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"].map((day) => <option key={day}>{day}</option>)}</select></label>
+        <label><span>Horário</span><input type="time" readOnly={readOnly} value={values.meetingTime} onChange={(event) => update("meetingTime", event.target.value)} /></label>
+        <label><span>Cor</span><select disabled={readOnly} value={values.color} onChange={(event) => update("color", event.target.value)}><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="gray">Cinza</option></select></label>
+        <label className="wide form-section-field"><span>Observações</span><textarea readOnly={readOnly} value={values.notes} onChange={(event) => update("notes", event.target.value)} /></label>
         <div className="member-picker wide">
           <span>Membros da célula</span>
-          <input className="member-picker-search" value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="Pesquisar membros..." />
-          <div>{filteredMembers.map((member) => <label key={member.id}><input type="checkbox" checked={values.memberIds.includes(member.id)} onChange={() => toggleMember(member.id)} /> <strong>{member.name}</strong><small>{member.email}</small></label>)}</div>
+          <small className="member-picker-help">Marque abaixo as pessoas que pertencem a esta célula.</small>
+          <label className="member-filter-search member-picker-filter"><Search /><input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="Filtrar membros..." /></label>
+          <div>{filteredMembers.map((member) => {
+            const selected = values.memberIds.includes(member.id);
+            return (
+              <label className={selected ? "selected" : undefined} key={member.id}>
+                <input type="checkbox" disabled={readOnly} checked={selected} onChange={() => toggleMember(member.id)} />
+                <strong>{member.name}</strong>
+                <small>{member.email}</small>
+                <small className="member-picker-meta">{selected ? "Vinculado nesta célula" : member.cell && member.cell !== "Sem célula" ? `Atual: ${member.cell}` : "Sem célula"}</small>
+              </label>
+            );
+          })}</div>
           {!filteredMembers.length && <small className="member-picker-empty">Nenhum membro encontrado.</small>}
         </div>
       </fieldset>

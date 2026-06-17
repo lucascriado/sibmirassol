@@ -18,9 +18,12 @@ export type RecordPayload = {
   status?: string;
   notes?: string;
   invitedBy?: string;
+  photoDataUrl?: string;
 };
 
 export const nullable = (value?: string) => value?.trim() || null;
+export const PHOTO_MAX_BYTES = 120 * 1024;
+const photoDataUrlPattern = /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/;
 
 export function personAttributes(payload: RecordPayload) {
   return {
@@ -36,6 +39,7 @@ export function personAttributes(payload: RecordPayload) {
     neighborhood: nullable(payload.neighborhood),
     city: nullable(payload.city),
     state: nullable(payload.state),
+    avatarUrl: nullable(payload.photoDataUrl),
     notes: nullable(payload.notes),
   };
 }
@@ -44,6 +48,10 @@ export function validateRecordPayload(payload: RecordPayload) {
   if (!payload.name?.trim()) return "Nome completo é obrigatório.";
   if (!payload.email?.trim()) return "E-mail é obrigatório.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) return "Informe um e-mail válido.";
+  if (payload.photoDataUrl?.trim()) {
+    if (!photoDataUrlPattern.test(payload.photoDataUrl)) return "A foto deve ser PNG ou JPG.";
+    if (Buffer.byteLength(payload.photoDataUrl, "utf8") > PHOTO_MAX_BYTES) return "A foto deve ter no máximo 120 KB.";
+  }
   return null;
 }
 

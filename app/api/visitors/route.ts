@@ -10,7 +10,7 @@ export async function GET() {
     const { rows } = await query(`
       SELECT id, full_name AS name, email, phone, birth_date AS "birthDate",
         gender, marital_status AS "civilStatus", cpf, zip_code AS "zipCode",
-        address, neighborhood, city, state, notes, visit_date AS date,
+        address, neighborhood, city, state, avatar_url AS "photoDataUrl", notes, visit_date AS date,
         invited_by AS "invitedBy", follow_up_status AS status, is_recent AS recent
       FROM visitor_directory ORDER BY visit_date DESC, full_name
     `);

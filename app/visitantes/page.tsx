@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
-  Download,
   Eye,
   Pencil,
   PartyPopper,
@@ -27,6 +26,7 @@ type Visitor = {
   initials: string;
   name: string;
   email: string;
+  photoDataUrl?: string;
   date: string;
   invitedBy: string;
   status: "Aguardando Contato" | "Em Acompanhamento" | "Integrado";
@@ -193,7 +193,6 @@ export default function VisitorsPage() {
             <div className="visitor-tabs">
               {tabs.map((item) => <button className={tab === item ? "active" : undefined} key={item} onClick={() => changeTab(item)}>{item}</button>)}
             </div>
-            <div className="visitor-tools"><button aria-label="Exportar"><Download /></button></div>
           </div>
           <div className="visitors-table-scroll">
             <table className="visitors-table">
@@ -202,7 +201,7 @@ export default function VisitorsPage() {
               <tbody>
                 {visible.map((visitor, index) => (
                   <tr key={visitor.email}>
-                    <td data-label="Visitante"><div className="visitor-identity"><span className={`visitor-avatar avatar-${index % 4}`}>{visitor.initials}</span><span><strong>{visitor.name}</strong><small>{visitor.email}</small></span></div></td>
+                    <td data-label="Visitante"><div className="visitor-identity"><span className={`visitor-avatar ${visitor.photoDataUrl ? "" : `avatar-${index % 4}`}`}>{visitor.photoDataUrl ? <img src={visitor.photoDataUrl} alt="" /> : visitor.initials}</span><span><strong>{visitor.name}</strong><small>{visitor.email}</small></span></div></td>
                     <td data-label="Data">{visitor.date}</td>
                     <td data-label="Quem convidou"><span className="invited-by"><Users />{visitor.invitedBy}</span></td>
                     <td data-label="Status"><span className={`visitor-status ${statusClass(visitor.status)}`}><i />{visitor.status}</span></td>
@@ -262,7 +261,7 @@ function formatDate(value: string) {
 }
 
 function visitorValues(visitor: Visitor): Partial<PersonRecordValues> {
-  return { name: visitor.name, email: visitor.email, phone: visitor.phone, birthDate: visitor.birthDate?.slice(0, 10), gender: visitor.gender, civilStatus: visitor.civilStatus, cpf: visitor.cpf, zipCode: visitor.zipCode, address: visitor.address, neighborhood: visitor.neighborhood, city: visitor.city, state: visitor.state, notes: visitor.notes, invitedBy: visitor.invitedBy, status: visitor.status };
+  return { name: visitor.name, email: visitor.email, phone: visitor.phone, birthDate: visitor.birthDate?.slice(0, 10), gender: visitor.gender, civilStatus: visitor.civilStatus, cpf: visitor.cpf, zipCode: visitor.zipCode, address: visitor.address, neighborhood: visitor.neighborhood, city: visitor.city, state: visitor.state, notes: visitor.notes, invitedBy: visitor.invitedBy, status: visitor.status, photoDataUrl: visitor.photoDataUrl };
 }
 
 function statusClass(status: Visitor["status"]) {
